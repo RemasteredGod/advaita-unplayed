@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hawkins Sync | Login</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body class="auth-page">
+    <main class="panel auth-panel">
+      <h1>HAWKINS LAB ACCESS TERMINAL</h1>
+      <p class="muted">Authenticate to join synchronized broadcast.</p>
+
+      <section>
+        <h2>Login</h2>
+        <form id="login-form" class="stack">
+          <label>
+            Username
+            <input type="text" name="username" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" required />
+          </label>
+          <button type="submit">LOGIN</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Register</h2>
+        <form id="register-form" class="stack">
+          <label>
+            Username (optional)
+            <input type="text" name="username" placeholder="random if blank" />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" required minlength="6" />
+          </label>
+          <button type="submit">REGISTER</button>
+        </form>
+      </section>
+
+      <p id="status" class="status"></p>
+    </main>
+
+    <script src="/static/login.js"></script>
+  </body>
+</html>

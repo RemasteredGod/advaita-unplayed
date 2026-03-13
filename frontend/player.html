@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hawkins Sync | Player</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>UPSIDE DOWN BROADCAST</h1>
+      <div>
+        <span id="whoami"></span>
+        <button id="logout">LOGOUT</button>
+      </div>
+    </header>
+
+    <main class="panel player-panel">
+      <h2 id="source-label">Awaiting source...</h2>
+      <div class="muted">STATUS: <span id="sync-state">SYNCHRONIZING</span></div>
+      <div class="muted">SYNC OFFSET: <span id="offset">0.00s</span></div>
+
+      <div id="local-wrapper" class="player-wrapper hidden">
+        <video id="local-video" preload="metadata"></video>
+      </div>
+      <div id="yt-wrapper" class="player-wrapper hidden">
+        <div id="yt-player"></div>
+      </div>
+
+      <form id="rename-form" class="stack compact">
+        <label>
+          Change Username
+          <input type="text" name="username" minlength="3" maxlength="30" required />
+        </label>
+        <button type="submit">UPDATE NAME</button>
+      </form>
+    </main>
+
+    <p id="status" class="status"></p>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/static/player.js"></script>
+  </body>
+</html>

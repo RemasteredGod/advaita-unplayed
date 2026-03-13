@@ -1,0 +1,201 @@
+@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap");
+
+:root {
+  --bg: #080b12;
+  --panel: #101725;
+  --line: #1f2f4a;
+  --text: #d7f7ff;
+  --accent: #ff2f53;
+  --warn: #ff9d2f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Share Tech Mono", monospace;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(255, 47, 83, 0.12), transparent 36%),
+    radial-gradient(circle at 80% 20%, rgba(66, 196, 255, 0.14), transparent 32%),
+    linear-gradient(160deg, #05070b 0%, #070f1e 60%, #090b13 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+}
+
+h1,
+h2 {
+  font-family: "VT323", monospace;
+  letter-spacing: 1px;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: clamp(1.6rem, 2.8vw, 2.5rem);
+}
+
+h2 {
+  font-size: 1.8rem;
+  color: var(--accent);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(5, 9, 16, 0.85);
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(16, 23, 37, 0.96), rgba(10, 14, 24, 0.96));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0 20px rgba(255, 47, 83, 0.08);
+}
+
+.auth-page {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.auth-panel {
+  width: min(750px, 95vw);
+  display: grid;
+  gap: 1rem;
+}
+
+.grid-admin {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.player-panel {
+  margin: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.stack {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.stack.compact {
+  max-width: 360px;
+}
+
+label {
+  display: grid;
+  gap: 0.3rem;
+  color: #8dc7ff;
+}
+
+input,
+select,
+button {
+  font: inherit;
+  border: 1px solid var(--line);
+  background: #0d1525;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+}
+
+select {
+  min-height: 180px;
+}
+
+button {
+  cursor: pointer;
+  background: linear-gradient(180deg, #5b1021, #390a15);
+  border-color: #7b1b2f;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+button:hover {
+  filter: brightness(1.12);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.player-wrapper {
+  margin-top: 0.8rem;
+  border: 1px solid #2a3a58;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #02050a;
+}
+
+video,
+#yt-player,
+iframe {
+  width: 100%;
+  min-height: 320px;
+  display: block;
+}
+
+.user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.status {
+  min-height: 1.5rem;
+  padding: 0.5rem 1rem;
+  color: #8fe0ff;
+}
+
+.status.error {
+  color: #ff9ea9;
+}
+
+.muted {
+  color: #93aaca;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .grid-admin {
+    grid-template-columns: 1fr;
+  }
+
+  .control-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
