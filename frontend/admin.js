@@ -373,23 +373,93 @@ document.getElementById("logout").addEventListener("click", async () => {
   window.location.href = "/static/login.html";
 });
 
-document.getElementById("upload-form").addEventListener("submit", async (event) => {
+const uploadModal    = document.getElementById("upload-modal");
+const uploadFill     = document.getElementById("upload-progress-fill");
+const uploadPct      = document.getElementById("upload-progress-label");
+const uploadFilename = document.getElementById("upload-modal-filename");
+const uploadCancel   = document.getElementById("upload-cancel-btn");
+
+function openUploadModal(filename) {
+  uploadFill.style.width = "0%";
+  uploadPct.textContent  = "0%";
+  uploadFilename.textContent = filename;
+  uploadModal.classList.add("active");
+  uploadModal.setAttribute("aria-hidden", "false");
+}
+
+function closeUploadModal() {
+  uploadModal.classList.remove("active");
+  uploadModal.setAttribute("aria-hidden", "true");
+}
+
+let activeXhr = null;
+
+uploadCancel.addEventListener("click", () => {
+  if (activeXhr) activeXhr.abort();
+});
+
+document.getElementById("upload-form").addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const formData = new FormData(event.currentTarget);
-  try {
-    await request("/api/media/upload", {
-      method: "POST",
-      body: formData,
-    });
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const submitBtn = document.getElementById("upload-submit-btn");
+  const fileInput = form.elements["video"];
+  const filename  = fileInput.files[0] ? fileInput.files[0].name : "video";
 
-    const mediaResponse = await request("/api/media");
-    renderMediaList(mediaResponse.items, mediaResponse.activeId);
-    showStatus("Upload complete");
-    event.currentTarget.reset();
-  } catch (error) {
-    showStatus(error.message, true);
-  }
+  const xhr = new XMLHttpRequest();
+  activeXhr = xhr;
+
+  xhr.upload.addEventListener("progress", (e) => {
+    if (!e.lengthComputable) return;
+    const pct = Math.round((e.loaded / e.total) * 100);
+    uploadFill.style.width = pct + "%";
+    uploadPct.textContent  = pct + "%";
+  });
+
+  xhr.addEventListener("loadstart", () => {
+    openUploadModal(filename);
+    submitBtn.disabled = true;
+  });
+
+  xhr.addEventListener("load", async () => {
+    activeXhr = null;
+    if (xhr.status >= 200 && xhr.status < 300) {
+      uploadFill.style.width = "100%";
+      uploadPct.textContent  = "100%";
+      setTimeout(closeUploadModal, 500);
+      try {
+        const mediaResponse = await request("/api/media");
+        renderMediaList(mediaResponse.items, mediaResponse.activeId);
+      } catch (_) { /* non-critical */ }
+      showStatus("Upload complete");
+      form.reset();
+    } else {
+      closeUploadModal();
+      let msg = "Upload failed";
+      try { msg = JSON.parse(xhr.responseText).error || msg; } catch (_) { /* ignore */ }
+      showStatus(msg, true);
+    }
+    submitBtn.disabled = false;
+  });
+
+  xhr.addEventListener("error", () => {
+    activeXhr = null;
+    closeUploadModal();
+    showStatus("Network error during upload", true);
+    submitBtn.disabled = false;
+  });
+
+  xhr.addEventListener("abort", () => {
+    activeXhr = null;
+    closeUploadModal();
+    showStatus("Upload cancelled", true);
+    submitBtn.disabled = false;
+  });
+
+  xhr.open("POST", "/api/media/upload");
+  xhr.withCredentials = true;
+  xhr.send(formData);
 });
 
 document.getElementById("youtube-form").addEventListener("submit", async (event) => {

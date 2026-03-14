@@ -86,5 +86,10 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/static/player.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+      }
+    </script>
   </body>
 </html>

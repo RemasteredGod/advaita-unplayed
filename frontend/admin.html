@@ -23,7 +23,7 @@
         <form id="upload-form" class="stack">
           <label>Upload Local Video <input name="video" type="file" accept="video/*" required /></label>
           <label>Title <input name="title" type="text" placeholder="episode-01" /></label>
-          <button type="submit">UPLOAD VIDEO</button>
+          <button type="submit" id="upload-submit-btn">UPLOAD VIDEO</button>
         </form>
 
         <form id="youtube-form" class="stack" style="margin-top:1rem">
@@ -75,8 +75,29 @@
 
     <p id="status" class="status"></p>
 
+    <!-- Upload progress modal -->
+    <div id="upload-modal" class="upload-modal" aria-hidden="true" role="dialog" aria-label="Upload progress">
+      <div class="upload-modal-box">
+        <div class="upload-modal-icon">&#8679;</div>
+        <div class="upload-modal-title">UPLOADING</div>
+        <div id="upload-modal-filename" class="upload-modal-filename"></div>
+        <div class="upload-modal-bar-wrap">
+          <div id="upload-progress-fill" class="upload-progress-fill"></div>
+        </div>
+        <div class="upload-modal-footer">
+          <span id="upload-progress-label" class="upload-progress-pct">0%</span>
+          <button id="upload-cancel-btn" class="upload-cancel-btn" type="button">CANCEL</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/static/admin.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+      }
+    </script>
   </body>
 </html>
