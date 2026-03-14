@@ -3,7 +3,11 @@ const statusEl = document.getElementById("status");
 const sourceLabelEl = document.getElementById("source-label");
 const mediaListEl = document.getElementById("media-list");
 const connectedUsersEl = document.getElementById("connected-users");
+const breakRequestsEl = document.getElementById("break-requests");
 const offsetEl = document.getElementById("offset");
+const latencySliderEl = document.getElementById("latency-slider");
+const latencyValueEl = document.getElementById("latency-value");
+const networkLatencyEl = document.getElementById("network-latency");
 
 const localWrapper = document.getElementById("local-wrapper");
 const ytWrapper = document.getElementById("yt-wrapper");
@@ -12,6 +16,8 @@ const seekSlider = document.getElementById("seek-slider");
 
 let socket;
 let currentSource = null;
+let currentSourceKey = "";
+let latencyMs = Number(latencySliderEl.value || 120);
 let ytPlayer = null;
 let ytReadyResolve;
 const ytReady = new Promise((resolve) => {
@@ -64,7 +70,15 @@ function setSourceLabel(source) {
 }
 
 function setMode(source) {
+  const nextKey = source
+    ? source.type === "youtube"
+      ? `youtube:${source.youtubeId}`
+      : `local:${source.streamUrl}`
+    : "";
+  const sourceChanged = nextKey !== currentSourceKey;
+
   currentSource = source;
+  currentSourceKey = nextKey;
   setSourceLabel(source);
 
   if (!source) {
@@ -76,7 +90,7 @@ function setMode(source) {
   if (source.type === "local") {
     ytWrapper.classList.add("hidden");
     localWrapper.classList.remove("hidden");
-    if (localVideo.src !== source.streamUrl) {
+    if (sourceChanged || localVideo.src !== source.streamUrl) {
       localVideo.src = source.streamUrl;
       localVideo.load();
     }
@@ -85,11 +99,72 @@ function setMode(source) {
 
   localWrapper.classList.add("hidden");
   ytWrapper.classList.remove("hidden");
+  if (!sourceChanged) {
+    return;
+  }
+
   ytReady.then(() => {
     if (ytPlayer && source.youtubeId) {
       ytPlayer.loadVideoById({ videoId: source.youtubeId, startSeconds: 0 });
       ytPlayer.pauseVideo();
     }
+  });
+}
+
+function setLatency(value) {
+  const numeric = Number(value);
+  const bounded = Number.isFinite(numeric) ? Math.max(0, Math.min(1500, numeric)) : 120;
+  latencyMs = bounded;
+  latencySliderEl.value = String(bounded);
+  latencyValueEl.textContent = `${bounded}ms`;
+}
+
+function setNetworkLatency(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    networkLatencyEl.textContent = "-- ms";
+    return;
+  }
+  networkLatencyEl.textContent = `${Math.round(numeric)} ms`;
+}
+
+function renderBreakRequests(items = []) {
+  breakRequestsEl.innerHTML = "";
+
+  if (!items.length) {
+    const li = document.createElement("li");
+    li.textContent = "No pending or recent break requests";
+    breakRequestsEl.append(li);
+    return;
+  }
+
+  items.forEach((item) => {
+    const li = document.createElement("li");
+    const status = String(item.status || "pending").toUpperCase();
+    const details = `${item.username} | ${item.durationMin}m | ${item.reason}`;
+    li.innerHTML = `<div>${details}</div><div class="muted">STATUS: ${status}</div>`;
+
+    if (item.status === "pending") {
+      const actions = document.createElement("div");
+      actions.className = "inline-actions";
+
+      const approve = document.createElement("button");
+      approve.type = "button";
+      approve.textContent = "APPROVE";
+      approve.dataset.requestId = String(item.id);
+      approve.dataset.approve = "1";
+
+      const deny = document.createElement("button");
+      deny.type = "button";
+      deny.textContent = "DENY";
+      deny.dataset.requestId = String(item.id);
+      deny.dataset.approve = "0";
+
+      actions.append(approve, deny);
+      li.append(actions);
+    }
+
+    breakRequestsEl.append(li);
   });
 }
 
@@ -198,17 +273,26 @@ function applyPause() {
 }
 
 function handleSync(action, time) {
-  applySeek(time);
-  if (action === "play") {
-    applyPlay();
+  const run = () => {
+    applySeek(time);
+    if (action === "play") {
+      applyPlay();
+    }
+    if (action === "pause") {
+      applyPause();
+    }
+    if (action === "seek") {
+      // seek only
+    }
+    updateOffset(time);
+  };
+
+  if (action === "play" || action === "pause") {
+    window.setTimeout(run, latencyMs);
+    return;
   }
-  if (action === "pause") {
-    applyPause();
-  }
-  if (action === "seek") {
-    // seek only
-  }
-  updateOffset(time);
+
+  run();
 }
 
 async function boot() {
@@ -233,17 +317,20 @@ async function boot() {
   });
 
   socket.on("source_update", (payload) => {
+    setLatency(payload.latencyMs ?? latencyMs);
     setMode(payload.source);
     handleSync("seek", Number(payload.currentTime || 0));
     showStatus(`Active source updated to ${payload.source.title}`);
   });
 
   socket.on("sync_state", (state) => {
+    setLatency(state.latencyMs ?? latencyMs);
     setMode(state.source);
     handleSync(state.isPlaying ? "play" : "pause", Number(state.currentTime || 0));
   });
 
   socket.on("sync_command", (event) => {
+    setLatency(event.latencyMs ?? latencyMs);
     if (event.source) {
       setMode(event.source);
     }
@@ -252,6 +339,22 @@ async function boot() {
 
   socket.on("sync_error", (event) => {
     showStatus(event.error || "Sync error", true);
+  });
+
+  socket.on("latency_pong", (event = {}) => {
+    const sentAt = Number(event.sentAt);
+    if (!Number.isFinite(sentAt)) {
+      return;
+    }
+    setNetworkLatency(Date.now() - sentAt);
+  });
+
+  setInterval(() => {
+    socket.emit("latency_probe", { sentAt: Date.now() });
+  }, 2500);
+
+  socket.on("break_requests_snapshot", (items) => {
+    renderBreakRequests(Array.isArray(items) ? items : []);
   });
 
   setInterval(() => {
@@ -334,33 +437,72 @@ document.getElementById("activate-source").addEventListener("click", async () =>
 });
 
 document.getElementById("play").addEventListener("click", () => {
+  if (!currentSource) {
+    showStatus("Set an active source before playback", true);
+    return;
+  }
   const time = getCurrentTime();
-  socket.emit("admin_control", { action: "play", time });
+  socket.emit("admin_control", { action: "play", time, latencyMs });
 });
 
 document.getElementById("pause").addEventListener("click", () => {
+  if (!currentSource) {
+    showStatus("Set an active source before playback", true);
+    return;
+  }
   const time = getCurrentTime();
-  socket.emit("admin_control", { action: "pause", time });
+  socket.emit("admin_control", { action: "pause", time, latencyMs });
 });
 
 document.getElementById("seek-back").addEventListener("click", () => {
+  if (!currentSource) {
+    showStatus("Set an active source before playback", true);
+    return;
+  }
   const time = Math.max(0, getCurrentTime() - 10);
-  socket.emit("admin_control", { action: "seek", time });
+  socket.emit("admin_control", { action: "seek", time, latencyMs });
 });
 
 document.getElementById("seek-forward").addEventListener("click", () => {
+  if (!currentSource) {
+    showStatus("Set an active source before playback", true);
+    return;
+  }
   const time = getCurrentTime() + 10;
-  socket.emit("admin_control", { action: "seek", time });
+  socket.emit("admin_control", { action: "seek", time, latencyMs });
 });
 
 seekSlider.addEventListener("change", () => {
+  if (!currentSource) {
+    showStatus("Set an active source before playback", true);
+    return;
+  }
   const duration = getDuration();
   if (duration <= 0) {
     return;
   }
 
   const target = (Number(seekSlider.value) / 100) * duration;
-  socket.emit("admin_control", { action: "seek", time: target });
+  socket.emit("admin_control", { action: "seek", time: target, latencyMs });
+});
+
+latencySliderEl.addEventListener("input", () => {
+  setLatency(latencySliderEl.value);
+});
+
+breakRequestsEl.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const requestId = Number(target.dataset.requestId);
+  if (!Number.isInteger(requestId)) {
+    return;
+  }
+
+  const approve = target.dataset.approve === "1";
+  socket.emit("break_request_decision", { requestId, approve });
 });
 
 boot().catch((error) => {

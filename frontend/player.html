@@ -3,38 +3,83 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hawkins Sync | Player</title>
+    <title>InSpace | Watch</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body>
+  <body class="user-page">
+
     <header class="topbar">
-      <h1>UPSIDE DOWN BROADCAST</h1>
+      <h1>&#9670; INSPACE BROADCAST</h1>
       <div>
         <span id="whoami"></span>
-        <button id="logout">LOGOUT</button>
+        <button id="logout" type="button">LOGOUT</button>
       </div>
     </header>
 
     <main class="panel player-panel">
-      <h2 id="source-label">Awaiting source...</h2>
-      <div class="muted">STATUS: <span id="sync-state">SYNCHRONIZING</span></div>
-      <div class="muted">SYNC OFFSET: <span id="offset">0.00s</span></div>
+      <div class="player-header-row">
+        <h2 id="source-label">Awaiting source...</h2>
+      </div>
 
       <div id="local-wrapper" class="player-wrapper hidden">
         <video id="local-video" preload="metadata"></video>
       </div>
+
       <div id="yt-wrapper" class="player-wrapper hidden">
         <div id="yt-player"></div>
+        <div class="yt-overlay"></div>
       </div>
-
-      <form id="rename-form" class="stack compact">
-        <label>
-          Change Username
-          <input type="text" name="username" minlength="3" maxlength="30" required />
-        </label>
-        <button type="submit">UPDATE NAME</button>
-      </form>
     </main>
+
+    <button id="toggle-chat" type="button" class="chat-toggle">CHAT</button>
+    <button id="toggle-sidebar" type="button" class="sidebar-toggle">CONTROLS</button>
+
+    <aside id="chat-sidebar" class="chat-sidebar">
+      <h3 class="chat-title">LIVE CHAT</h3>
+      <div id="chat-messages" class="chat-messages"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" name="message" type="text" maxlength="280" placeholder="Type a message..." required />
+        <button type="submit">SEND</button>
+      </form>
+    </aside>
+
+    <aside id="user-sidebar" class="user-sidebar">
+        <div class="muted">STATUS: <span id="sync-state">SYNCHRONIZING</span></div>
+        <div class="muted">LINK LATENCY: <span id="latency">120ms</span></div>
+        <div class="muted">NETWORK RTT: <span id="network-latency">-- ms</span></div>
+        <div class="muted">BREAK STATUS: <span id="break-status">NONE</span></div>
+        <div class="muted">SYNC OFFSET: <span id="offset">0.00s</span></div>
+
+        <div class="control-row custom-control-row">
+          <button id="fullscreen-btn" type="button">ENTER FULLSCREEN</button>
+          <button id="sync-now" type="button">RESYNC NOW</button>
+        </div>
+
+        <form id="break-form" class="stack compact">
+          <label>
+            Ask For A Break (Reason)
+            <input type="text" name="reason" maxlength="120" placeholder="Need 5 minutes" required />
+          </label>
+          <label>
+            Duration (minutes)
+            <select name="durationMin">
+              <option value="5" selected>5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <button type="submit">REQUEST BREAK</button>
+        </form>
+
+        <form id="rename-form" class="stack compact">
+          <label>
+            Change Username
+            <input type="text" name="username" minlength="3" maxlength="30" required />
+          </label>
+          <button type="submit">UPDATE NAME</button>
+        </form>
+    </aside>
 
     <p id="status" class="status"></p>
 

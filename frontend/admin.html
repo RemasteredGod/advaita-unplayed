@@ -3,50 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hawkins Sync | Admin</title>
+    <title>InSpace | Control Room</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
+
     <header class="topbar">
-      <h1>HAWKINS LAB CONTROL TERMINAL</h1>
+      <h1>&#9670; INSPACE CONTROL TERMINAL</h1>
       <div>
         <span id="whoami"></span>
-        <button id="logout">LOGOUT</button>
+        <button id="logout" type="button">LOGOUT</button>
       </div>
     </header>
 
     <main class="grid-admin">
       <section class="panel">
         <h2>Source Management</h2>
+
         <form id="upload-form" class="stack">
           <label>Upload Local Video <input name="video" type="file" accept="video/*" required /></label>
           <label>Title <input name="title" type="text" placeholder="episode-01" /></label>
           <button type="submit">UPLOAD VIDEO</button>
         </form>
 
-        <form id="youtube-form" class="stack">
+        <form id="youtube-form" class="stack" style="margin-top:1rem">
           <label>YouTube URL <input name="url" type="url" placeholder="https://youtube.com/watch?v=..." required /></label>
           <label>Title <input name="title" type="text" placeholder="demo clip" /></label>
           <button type="submit">ADD YOUTUBE SOURCE</button>
         </form>
 
-        <label>
+        <label style="margin-top:1rem">
           Available Sources
           <select id="media-list" size="8"></select>
         </label>
-        <button id="activate-source">SET ACTIVE SOURCE</button>
+        <button id="activate-source" type="button" style="margin-top:0.4rem">SET ACTIVE SOURCE</button>
       </section>
 
       <section class="panel">
         <h2>Broadcast Controls</h2>
         <div id="source-label" class="muted"></div>
-        <div class="control-row">
-          <button id="play">PLAY</button>
-          <button id="pause">PAUSE</button>
-          <button id="seek-back">-10s</button>
-          <button id="seek-forward">+10s</button>
+        <div class="control-row" style="margin-top:0.8rem">
+          <button id="play" type="button">&#9654; PLAY</button>
+          <button id="pause" type="button">&#9646;&#9646; PAUSE</button>
+          <button id="seek-back" type="button">&#8592; -10s</button>
+          <button id="seek-forward" type="button">+10s &#8594;</button>
         </div>
         <input id="seek-slider" type="range" min="0" max="100" value="0" />
+        <label style="margin-top:0.6rem">
+          UPLINK LATENCY (ms)
+          <input id="latency-slider" type="range" min="0" max="1500" step="25" value="120" />
+        </label>
+        <div class="muted">TEMPORAL BUFFER: <span id="latency-value">120ms</span></div>
+        <div class="muted">NETWORK RTT: <span id="network-latency">-- ms</span></div>
         <div class="muted">SYNC OFFSET: <span id="offset">0.00s</span></div>
 
         <div id="local-wrapper" class="player-wrapper hidden">
@@ -60,6 +68,8 @@
       <section class="panel">
         <h2>Connected Agents</h2>
         <ul id="connected-users" class="user-list"></ul>
+        <h2 style="margin-top:1rem">Break Requests</h2>
+        <ul id="break-requests" class="user-list"></ul>
       </section>
     </main>
 

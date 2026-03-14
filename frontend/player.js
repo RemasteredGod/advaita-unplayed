@@ -2,7 +2,20 @@ const whoamiEl = document.getElementById("whoami");
 const statusEl = document.getElementById("status");
 const sourceLabelEl = document.getElementById("source-label");
 const syncStateEl = document.getElementById("sync-state");
+const latencyEl = document.getElementById("latency");
+const networkLatencyEl = document.getElementById("network-latency");
+const breakStatusEl = document.getElementById("break-status");
 const offsetEl = document.getElementById("offset");
+const fullscreenBtnEl = document.getElementById("fullscreen-btn");
+const syncNowBtnEl = document.getElementById("sync-now");
+const breakFormEl = document.getElementById("break-form");
+const sidebarEl = document.getElementById("user-sidebar");
+const toggleSidebarBtnEl = document.getElementById("toggle-sidebar");
+const chatSidebarEl = document.getElementById("chat-sidebar");
+const toggleChatBtnEl = document.getElementById("toggle-chat");
+const chatMessagesEl = document.getElementById("chat-messages");
+const chatFormEl = document.getElementById("chat-form");
+const chatInputEl = document.getElementById("chat-input");
 
 const localWrapper = document.getElementById("local-wrapper");
 const ytWrapper = document.getElementById("yt-wrapper");
@@ -10,6 +23,10 @@ const localVideo = document.getElementById("local-video");
 
 let socket;
 let currentSource = null;
+let currentSourceKey = "";
+let latencyMs = 120;
+let fullscreenHintShown = false;
+let currentUserId = null;
 let ytPlayer = null;
 let ytReadyResolve;
 const ytReady = new Promise((resolve) => {
@@ -38,6 +55,43 @@ function showStatus(message, isError = false) {
   statusEl.classList.toggle("error", isError);
 }
 
+function setSidebarOpen(open) {
+  sidebarEl.classList.toggle("open", Boolean(open));
+  toggleSidebarBtnEl.textContent = open ? "CLOSE" : "CONTROLS";
+}
+
+function setChatOpen(open) {
+  chatSidebarEl.classList.toggle("open", Boolean(open));
+  toggleChatBtnEl.textContent = open ? "CLOSE CHAT" : "CHAT";
+}
+
+function appendChatMessage(item = {}) {
+  const row = document.createElement("div");
+  row.className = "chat-row";
+
+  const mine = Number(item.userId) === Number(currentUserId);
+  if (mine) {
+    row.classList.add("mine");
+  }
+
+  const name = document.createElement("span");
+  name.className = "chat-name";
+  name.textContent = item.username || "user";
+
+  const text = document.createElement("span");
+  text.className = "chat-text";
+  text.textContent = item.message || "";
+
+  row.append(name, text);
+  chatMessagesEl.append(row);
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+}
+
+function renderChatHistory(items = []) {
+  chatMessagesEl.innerHTML = "";
+  items.forEach((entry) => appendChatMessage(entry));
+}
+
 async function request(url, options = {}) {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json" },
@@ -52,7 +106,15 @@ async function request(url, options = {}) {
 }
 
 function setSource(source) {
+  const nextKey = source
+    ? source.type === "youtube"
+      ? `youtube:${source.youtubeId}`
+      : `local:${source.streamUrl}`
+    : "";
+  const sourceChanged = nextKey !== currentSourceKey;
+
   currentSource = source;
+  currentSourceKey = nextKey;
 
   if (!source) {
     sourceLabelEl.textContent = "Awaiting source...";
@@ -66,7 +128,7 @@ function setSource(source) {
   if (source.type === "local") {
     ytWrapper.classList.add("hidden");
     localWrapper.classList.remove("hidden");
-    if (localVideo.src !== source.streamUrl) {
+    if (sourceChanged || localVideo.src !== source.streamUrl) {
       localVideo.src = source.streamUrl;
       localVideo.load();
     }
@@ -76,10 +138,68 @@ function setSource(source) {
   localWrapper.classList.add("hidden");
   ytWrapper.classList.remove("hidden");
 
+  if (!sourceChanged) {
+    return;
+  }
+
   ytReady.then(() => {
     if (ytPlayer && ytPlayer.loadVideoById) {
       ytPlayer.loadVideoById({ videoId: source.youtubeId, startSeconds: 0 });
       ytPlayer.pauseVideo();
+    }
+  });
+}
+
+function setLatency(value) {
+  const numeric = Number(value);
+  const bounded = Number.isFinite(numeric) ? Math.max(0, Math.min(1500, numeric)) : 120;
+  latencyMs = bounded;
+  latencyEl.textContent = `${bounded}ms`;
+}
+
+function setNetworkLatency(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    networkLatencyEl.textContent = "-- ms";
+    return;
+  }
+  networkLatencyEl.textContent = `${Math.round(numeric)} ms`;
+}
+
+function getFullscreenTarget() {
+  return document.querySelector(".player-panel") || document.documentElement;
+}
+
+async function requestFullscreenNow() {
+  const target = getFullscreenTarget();
+
+  if (document.fullscreenElement) {
+    return true;
+  }
+
+  if (target.requestFullscreen) {
+    await target.requestFullscreen();
+    return true;
+  }
+
+  if (target.webkitRequestFullscreen) {
+    target.webkitRequestFullscreen();
+    return true;
+  }
+
+  if (localVideo.webkitEnterFullscreen && currentSource && currentSource.type === "local") {
+    localVideo.webkitEnterFullscreen();
+    return true;
+  }
+
+  return false;
+}
+
+function ensureFullscreen() {
+  requestFullscreenNow().catch(() => {
+    if (!fullscreenHintShown) {
+      showStatus("Auto fullscreen blocked. Tap ENTER FULLSCREEN.", true);
+      fullscreenHintShown = true;
     }
   });
 }
@@ -127,6 +247,8 @@ function applyPlay() {
     return;
   }
 
+  ensureFullscreen();
+
   if (currentSource.type === "local") {
     localVideo.play().catch(() => {});
     return;
@@ -155,6 +277,8 @@ function applyPause() {
 }
 
 function syncTo(event) {
+  setLatency(event.latencyMs ?? latencyMs);
+
   if (event.source) {
     setSource(event.source);
   }
@@ -162,24 +286,34 @@ function syncTo(event) {
   const time = Number(event.time ?? event.currentTime ?? 0);
   const action = event.action || (event.isPlaying ? "play" : "pause");
 
-  applySeek(time);
+  const run = () => {
+    applySeek(time);
 
-  if (action === "play") {
-    applyPlay();
-  }
-  if (action === "pause") {
-    applyPause();
-  }
-  if (action === "seek") {
-    syncStateEl.textContent = "SYNCHRONIZING";
+    if (action === "play") {
+      applyPlay();
+    }
+    if (action === "pause") {
+      applyPause();
+    }
+    if (action === "seek") {
+      syncStateEl.textContent = "SYNCHRONIZING";
+    }
+
+    const offset = Math.abs(getCurrentTime() - time);
+    offsetEl.textContent = `${offset.toFixed(2)}s`;
+  };
+
+  if (action === "play" || action === "pause") {
+    window.setTimeout(run, latencyMs);
+    return;
   }
 
-  const offset = Math.abs(getCurrentTime() - time);
-  offsetEl.textContent = `${offset.toFixed(2)}s`;
+  run();
 }
 
 async function boot() {
   const { user } = await request("/api/auth/me");
+  currentUserId = user.id;
   whoamiEl.textContent = `${user.username} [${user.role}]`;
   if (user.role === "admin") {
     window.location.href = "/static/admin.html";
@@ -189,6 +323,9 @@ async function boot() {
   localVideo.controls = false;
 
   socket = io();
+
+  setSidebarOpen(false);
+  setChatOpen(false);
 
   socket.on("sync_state", (state) => {
     syncTo(state);
@@ -204,6 +341,52 @@ async function boot() {
 
   socket.on("sync_error", (event) => {
     showStatus(event.error || "Sync error", true);
+  });
+
+  socket.on("latency_pong", (event = {}) => {
+    const sentAt = Number(event.sentAt);
+    if (!Number.isFinite(sentAt)) {
+      return;
+    }
+    setNetworkLatency(Date.now() - sentAt);
+  });
+
+  setInterval(() => {
+    socket.emit("latency_probe", { sentAt: Date.now() });
+  }, 2500);
+
+  socket.on("break_request_status", (request = {}) => {
+    if (Number(request.userId) !== Number(currentUserId)) {
+      return;
+    }
+
+    if (request.status === "pending") {
+      breakStatusEl.textContent = `PENDING (${request.durationMin}m)`;
+      showStatus("Break request sent to admin");
+      setSidebarOpen(true);
+      return;
+    }
+
+    if (request.status === "approved") {
+      breakStatusEl.textContent = `APPROVED (${request.durationMin}m)`;
+      showStatus("Break approved by admin");
+      setSidebarOpen(true);
+      return;
+    }
+
+    if (request.status === "denied") {
+      breakStatusEl.textContent = "DENIED";
+      showStatus("Break request denied", true);
+      setSidebarOpen(true);
+    }
+  });
+
+  socket.on("chat_history", (messages = []) => {
+    renderChatHistory(Array.isArray(messages) ? messages : []);
+  });
+
+  socket.on("chat_message", (message = {}) => {
+    appendChatMessage(message);
   });
 
   setInterval(() => {
@@ -234,6 +417,70 @@ document.getElementById("rename-form").addEventListener("submit", async (event) 
   } catch (error) {
     showStatus(error.message, true);
   }
+});
+
+fullscreenBtnEl.addEventListener("click", () => {
+  requestFullscreenNow().catch(() => {
+    showStatus("Fullscreen not available in this browser context", true);
+  });
+});
+
+toggleSidebarBtnEl.addEventListener("click", () => {
+  setSidebarOpen(!sidebarEl.classList.contains("open"));
+});
+
+toggleChatBtnEl.addEventListener("click", () => {
+  setChatOpen(!chatSidebarEl.classList.contains("open"));
+});
+
+syncNowBtnEl.addEventListener("click", () => {
+  if (!socket) {
+    return;
+  }
+  socket.emit("request_sync");
+  showStatus("Resync requested");
+});
+
+breakFormEl.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  if (!socket) {
+    return;
+  }
+
+  const formData = new FormData(breakFormEl);
+  const reason = String(formData.get("reason") || "").trim();
+  const durationMin = Number(formData.get("durationMin") || 5);
+
+  if (!reason) {
+    showStatus("Please add a break reason", true);
+    return;
+  }
+
+  socket.emit("break_request_submit", {
+    reason,
+    durationMin,
+  });
+
+  breakStatusEl.textContent = "PENDING";
+  setSidebarOpen(true);
+});
+
+chatFormEl.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  if (!socket) {
+    return;
+  }
+
+  const message = String(chatInputEl.value || "").trim();
+  if (!message) {
+    return;
+  }
+
+  socket.emit("chat_send", { message });
+  chatInputEl.value = "";
+  setChatOpen(true);
 });
 
 boot().catch((error) => {
