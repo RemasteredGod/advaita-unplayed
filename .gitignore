@@ -3,5 +3,6 @@ node_modules/
 data/
 *.sqlite
 uploads/
+videos/
 .DS_Store
 npm-debug.log*

@@ -47,6 +47,13 @@ app.use("/static", express.static(frontendDir));
 app.use("/api/auth", authRouter);
 app.use("/api/media", createMediaRouter({ requireAuth, requireAdmin }));
 
+// Serve the service worker from root so its scope covers all paths (socket.io, /stream/, etc.)
+app.get("/sw.js", (req, res) => {
+  res.set("Service-Worker-Allowed", "/");
+  res.set("Cache-Control", "no-cache");
+  res.sendFile(path.join(frontendDir, "sw.js"));
+});
+
 app.get("/", (req, res) => {
   res.redirect("/static/login.html");
 });

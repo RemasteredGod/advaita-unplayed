@@ -287,6 +287,102 @@ h2 {
 
 /* ── Forms ───────────────────────────────────── */
 .stack { display: grid; gap: 0.7rem; }
+
+/* ── Upload progress modal ───────────────────── */
+.upload-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.upload-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.upload-modal-box {
+  background: var(--panel, #0e0e0e);
+  border: 1px solid var(--accent, #cc1020);
+  box-shadow: 0 0 32px rgba(200, 10, 30, 0.25);
+  padding: 2rem 2.4rem;
+  min-width: 300px;
+  max-width: 460px;
+  width: 90%;
+  display: grid;
+  gap: 1rem;
+}
+.upload-modal-icon {
+  font-size: 2rem;
+  color: var(--accent, #cc1020);
+  text-align: center;
+  animation: upload-pulse 1.2s ease-in-out infinite;
+}
+.upload-modal-title {
+  font-size: 1rem;
+  letter-spacing: 5px;
+  text-align: center;
+  color: var(--text, #e8e8e8);
+}
+.upload-modal-filename {
+  font-size: 0.76rem;
+  color: var(--text-dim, #c8c8c8);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+.upload-modal-bar-wrap {
+  height: 5px;
+  background: #1e1e1e;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.upload-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent, #cc1020);
+  border-radius: 3px;
+  transition: width 0.15s ease;
+}
+.upload-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.upload-progress-pct {
+  font-size: 0.82rem;
+  color: var(--text-dim, #c8c8c8);
+  letter-spacing: 2px;
+}
+.upload-cancel-btn {
+  background: none;
+  border: 1px solid #444;
+  color: #777;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  padding: 0.28rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+  box-shadow: none;
+}
+.upload-cancel-btn:hover {
+  border-color: var(--accent, #cc1020);
+  color: var(--accent, #cc1020);
+  background: none;
+  box-shadow: none;
+  filter: none;
+}
+@keyframes upload-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
 .stack.compact { max-width: 360px; }
 
 label {
