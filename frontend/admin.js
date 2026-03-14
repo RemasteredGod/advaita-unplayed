@@ -378,11 +378,36 @@ const uploadFill     = document.getElementById("upload-progress-fill");
 const uploadPct      = document.getElementById("upload-progress-label");
 const uploadFilename = document.getElementById("upload-modal-filename");
 const uploadCancel   = document.getElementById("upload-cancel-btn");
+const uploadStatBytes = document.getElementById("upload-stat-bytes");
+const uploadStatSpeed = document.getElementById("upload-stat-speed");
+const uploadStatEta = document.getElementById("upload-stat-eta");
+
+function formatBytes(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+  const scaled = value / (1024 ** index);
+  const precision = scaled >= 100 || index === 0 ? 0 : 1;
+  return `${scaled.toFixed(precision)} ${units[index]}`;
+}
+
+function formatEta(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "--:--";
+  const rounded = Math.max(0, Math.round(seconds));
+  const mins = String(Math.floor(rounded / 60)).padStart(2, "0");
+  const secs = String(rounded % 60).padStart(2, "0");
+  return `${mins}:${secs}`;
+}
 
 function openUploadModal(filename) {
   uploadFill.style.width = "0%";
+  uploadFill.classList.add("indeterminate");
   uploadPct.textContent  = "0%";
   uploadFilename.textContent = filename;
+  uploadStatBytes.textContent = "0 B / 0 B";
+  uploadStatSpeed.textContent = "0 B/s";
+  uploadStatEta.textContent = "--:--";
   uploadModal.classList.add("active");
   uploadModal.setAttribute("aria-hidden", "false");
 }
@@ -390,6 +415,7 @@ function openUploadModal(filename) {
 function closeUploadModal() {
   uploadModal.classList.remove("active");
   uploadModal.setAttribute("aria-hidden", "true");
+  uploadFill.classList.remove("indeterminate");
 }
 
 let activeXhr = null;
@@ -409,12 +435,28 @@ document.getElementById("upload-form").addEventListener("submit", (event) => {
 
   const xhr = new XMLHttpRequest();
   activeXhr = xhr;
+  const startedAt = performance.now();
 
   xhr.upload.addEventListener("progress", (e) => {
-    if (!e.lengthComputable) return;
+    const elapsedSeconds = Math.max((performance.now() - startedAt) / 1000, 0.1);
+    const speed = e.loaded / elapsedSeconds;
+    uploadStatSpeed.textContent = `${formatBytes(speed)}/s`;
+
+    if (!e.lengthComputable) {
+      uploadStatBytes.textContent = `${formatBytes(e.loaded)} / --`;
+      uploadStatEta.textContent = "--:--";
+      uploadPct.textContent = "--";
+      return;
+    }
+
+    uploadFill.classList.remove("indeterminate");
     const pct = Math.round((e.loaded / e.total) * 100);
     uploadFill.style.width = pct + "%";
-    uploadPct.textContent  = pct + "%";
+    uploadPct.textContent = pct + "%";
+    uploadStatBytes.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
+    const remaining = Math.max(e.total - e.loaded, 0);
+    const eta = speed > 0 ? remaining / speed : Number.POSITIVE_INFINITY;
+    uploadStatEta.textContent = formatEta(eta);
   });
 
   xhr.addEventListener("loadstart", () => {
@@ -425,8 +467,10 @@ document.getElementById("upload-form").addEventListener("submit", (event) => {
   xhr.addEventListener("load", async () => {
     activeXhr = null;
     if (xhr.status >= 200 && xhr.status < 300) {
+      uploadFill.classList.remove("indeterminate");
       uploadFill.style.width = "100%";
       uploadPct.textContent  = "100%";
+      uploadStatEta.textContent = "00:00";
       setTimeout(closeUploadModal, 500);
       try {
         const mediaResponse = await request("/api/media");

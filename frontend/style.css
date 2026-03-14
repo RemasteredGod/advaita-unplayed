@@ -350,6 +350,32 @@ h2 {
   border-radius: 3px;
   transition: width 0.15s ease;
 }
+.upload-progress-fill.indeterminate {
+  width: 35%;
+  animation: upload-indeterminate 1s linear infinite;
+}
+.upload-stats-grid {
+  display: grid;
+  gap: 0.38rem;
+  margin-top: -0.15rem;
+}
+.upload-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.upload-stat-label {
+  font-size: 0.7rem;
+  color: #7a7a7a;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.upload-stat-value {
+  font-size: 0.78rem;
+  color: var(--text-dim, #c8c8c8);
+  letter-spacing: 1px;
+}
 .upload-modal-footer {
   display: flex;
   align-items: center;
@@ -382,6 +408,10 @@ h2 {
 @keyframes upload-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+@keyframes upload-indeterminate {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(360%); }
 }
 .stack.compact { max-width: 360px; }
 

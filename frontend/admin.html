@@ -84,6 +84,20 @@
         <div class="upload-modal-bar-wrap">
           <div id="upload-progress-fill" class="upload-progress-fill"></div>
         </div>
+        <div class="upload-stats-grid">
+          <div class="upload-stat-row">
+            <span class="upload-stat-label">Uploaded</span>
+            <span id="upload-stat-bytes" class="upload-stat-value">0 B / 0 B</span>
+          </div>
+          <div class="upload-stat-row">
+            <span class="upload-stat-label">Speed</span>
+            <span id="upload-stat-speed" class="upload-stat-value">0 B/s</span>
+          </div>
+          <div class="upload-stat-row">
+            <span class="upload-stat-label">ETA</span>
+            <span id="upload-stat-eta" class="upload-stat-value">--:--</span>
+          </div>
+        </div>
         <div class="upload-modal-footer">
           <span id="upload-progress-label" class="upload-progress-pct">0%</span>
           <button id="upload-cancel-btn" class="upload-cancel-btn" type="button">CANCEL</button>
