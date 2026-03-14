@@ -101,7 +101,7 @@ function createMediaRouter({ requireAuth, requireAdmin }) {
 
   const upload = multer({
     storage,
-    limits: { fileSize: 500 * 1024 * 1024 },
+    limits: { fileSize: 2 * 1024 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       const allowed = [".mp4", ".webm", ".mov", ".mkv", ".m4v"];
       const extension = path.extname(file.originalname).toLowerCase();
