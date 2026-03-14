@@ -6,92 +6,20 @@
     <title>InSpace | Watch</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body>
-
-    <!-- Upside-down tree silhouettes at top -->
-    <div class="upside-trees" aria-hidden="true">
-      <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-        <path fill="#050000" d="
-          M0,0 L1440,0 L1440,50
-          L1428,50 L1412,88 L1396,50
-          L1378,50 L1364,72 L1348,50
-          L1322,50 L1302,102 L1284,68 L1265,102 L1245,50
-          L1228,50 L1215,80 L1200,50
-          L1180,50 L1158,106 L1138,50
-          L1120,50 L1106,66 L1090,50
-          L1068,50 L1048,98 L1028,70 L1008,98 L988,50
-          L970,50 L956,78 L940,50
-          L918,50 L896,104 L874,50
-          L856,50 L843,65 L828,50
-          L808,50 L785,102 L762,70 L740,102 L718,50
-          L700,50 L686,80 L670,50
-          L648,50 L626,98 L604,50
-          L586,50 L572,66 L558,50
-          L535,50 L512,107 L492,72 L470,107 L448,50
-          L430,50 L415,78 L400,50
-          L378,50 L356,100 L334,50
-          L316,50 L303,65 L288,50
-          L265,50 L242,103 L218,70 L195,103 L172,50
-          L154,50 L140,80 L124,50
-          L102,50 L80,97 L58,50
-          L40,50 L28,66 L14,50 L0,50
-          Z
-        "/>
-      </svg>
-    </div>
-
-    <!-- Left & right vein decorations -->
-    <div class="vein-container" aria-hidden="true">
-      <svg class="vein-left" viewBox="0 0 130 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-        <path class="vein-path vein-main" d="M8,0 C18,100 3,210 22,330 C35,425 8,525 24,665 C36,770 10,870 28,1000"/>
-        <path class="vein-path vein-branch" d="M14,105 C32,94 56,100 82,88"/>
-        <path class="vein-path vein-branch" d="M18,210 C40,198 65,205 94,192"/>
-        <path class="vein-path vein-branch" d="M22,330 C45,318 72,326 108,312"/>
-        <path class="vein-path vein-branch" d="M18,445 C40,432 66,440 98,428"/>
-        <path class="vein-path vein-branch" d="M24,570 C48,558 74,566 106,552"/>
-        <path class="vein-path vein-branch" d="M20,680 C44,668 70,676 102,662"/>
-        <path class="vein-path vein-sub" d="M82,88 C95,78 112,84 126,74"/>
-        <path class="vein-path vein-sub" d="M94,192 C106,182 118,188 128,178"/>
-        <path class="vein-path vein-sub" d="M108,312 C116,302 126,308 130,298"/>
-      </svg>
-      <svg class="vein-right" viewBox="0 0 130 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-        <path class="vein-path vein-main" d="M8,0 C18,100 3,210 22,330 C35,425 8,525 24,665 C36,770 10,870 28,1000"/>
-        <path class="vein-path vein-branch" d="M14,105 C32,94 56,100 82,88"/>
-        <path class="vein-path vein-branch" d="M18,210 C40,198 65,205 94,192"/>
-        <path class="vein-path vein-branch" d="M22,330 C45,318 72,326 108,312"/>
-        <path class="vein-path vein-branch" d="M18,445 C40,432 66,440 98,428"/>
-        <path class="vein-path vein-branch" d="M24,570 C48,558 74,566 106,552"/>
-        <path class="vein-path vein-branch" d="M20,680 C44,668 70,676 102,662"/>
-        <path class="vein-path vein-sub" d="M82,88 C95,78 112,84 126,74"/>
-        <path class="vein-path vein-sub" d="M94,192 C106,182 118,188 128,178"/>
-        <path class="vein-path vein-sub" d="M108,312 C116,302 126,308 130,298"/>
-      </svg>
-    </div>
-
-    <!-- Floating spores -->
-    <div class="spores" aria-hidden="true">
-      <span class="spore" style="--sx:6%;  --ss:2px; --sd:18s; --delay:0s;   --drift-x:20px"></span>
-      <span class="spore" style="--sx:22%; --ss:3px; --sd:14s; --delay:2s;   --drift-x:-15px"></span>
-      <span class="spore" style="--sx:40%; --ss:2px; --sd:20s; --delay:4s;   --drift-x:18px"></span>
-      <span class="spore" style="--sx:58%; --ss:4px; --sd:16s; --delay:1s;   --drift-x:-22px"></span>
-      <span class="spore" style="--sx:72%; --ss:2px; --sd:22s; --delay:6s;   --drift-x:12px"></span>
-      <span class="spore" style="--sx:85%; --ss:3px; --sd:17s; --delay:3s;   --drift-x:-16px"></span>
-      <span class="spore" style="--sx:50%; --ss:2px; --sd:13s; --delay:8s;   --drift-x:25px"></span>
-      <span class="spore" style="--sx:30%; --ss:2px; --sd:19s; --delay:10s;  --drift-x:-10px"></span>
-    </div>
+  <body class="user-page">
 
     <header class="topbar">
       <h1>&#9670; INSPACE BROADCAST</h1>
       <div>
         <span id="whoami"></span>
-        <button id="logout">LOGOUT</button>
+        <button id="logout" type="button">LOGOUT</button>
       </div>
     </header>
 
     <main class="panel player-panel">
-      <h2 id="source-label">Awaiting source...</h2>
-      <div class="muted">STATUS: <span id="sync-state">SYNCHRONIZING</span></div>
-      <div class="muted">SYNC OFFSET: <span id="offset">0.00s</span></div>
+      <div class="player-header-row">
+        <h2 id="source-label">Awaiting source...</h2>
+      </div>
 
       <div id="local-wrapper" class="player-wrapper hidden">
         <video id="local-video" preload="metadata"></video>
@@ -99,26 +27,64 @@
 
       <div id="yt-wrapper" class="player-wrapper hidden">
         <div id="yt-player"></div>
-        <!-- Overlay blocks audience from pausing/seeking the YouTube player -->
         <div class="yt-overlay"></div>
       </div>
-
-      <form id="rename-form" class="stack compact" style="margin-top:1rem">
-        <label>
-          Change Username
-          <input type="text" name="username" minlength="3" maxlength="30" required />
-        </label>
-        <button type="submit">UPDATE NAME</button>
-      </form>
     </main>
+
+    <button id="toggle-chat" type="button" class="chat-toggle">CHAT</button>
+    <button id="toggle-sidebar" type="button" class="sidebar-toggle">CONTROLS</button>
+
+    <aside id="chat-sidebar" class="chat-sidebar">
+      <h3 class="chat-title">LIVE CHAT</h3>
+      <div id="chat-messages" class="chat-messages"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" name="message" type="text" maxlength="280" placeholder="Type a message..." required />
+        <button type="submit">SEND</button>
+      </form>
+    </aside>
+
+    <aside id="user-sidebar" class="user-sidebar">
+        <div class="muted">STATUS: <span id="sync-state">SYNCHRONIZING</span></div>
+        <div class="muted">LINK LATENCY: <span id="latency">120ms</span></div>
+        <div class="muted">NETWORK RTT: <span id="network-latency">-- ms</span></div>
+        <div class="muted">BREAK STATUS: <span id="break-status">NONE</span></div>
+        <div class="muted">SYNC OFFSET: <span id="offset">0.00s</span></div>
+
+        <div class="control-row custom-control-row">
+          <button id="fullscreen-btn" type="button">ENTER FULLSCREEN</button>
+          <button id="sync-now" type="button">RESYNC NOW</button>
+        </div>
+
+        <form id="break-form" class="stack compact">
+          <label>
+            Ask For A Break (Reason)
+            <input type="text" name="reason" maxlength="120" placeholder="Need 5 minutes" required />
+          </label>
+          <label>
+            Duration (minutes)
+            <select name="durationMin">
+              <option value="5" selected>5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <button type="submit">REQUEST BREAK</button>
+        </form>
+
+        <form id="rename-form" class="stack compact">
+          <label>
+            Change Username
+            <input type="text" name="username" minlength="3" maxlength="30" required />
+          </label>
+          <button type="submit">UPDATE NAME</button>
+        </form>
+    </aside>
 
     <p id="status" class="status"></p>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/static/player.js"></script>
-    <script src="/static/vecna.js"></script>
-    <script src="/static/leaves.js"></script>
-    <script src="/static/bats.js"></script>
   </body>
 </html>

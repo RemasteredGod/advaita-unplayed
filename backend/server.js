@@ -149,10 +149,14 @@ app.post("/api/admin/activate-source", requireAdmin, async (req, res) => {
       source,
       currentTime: 0,
       isPlaying: false,
+      latencyMs: 120,
       updatedAt: Date.now(),
     };
 
     await setPlaybackState(payload);
+    if (socketApi && typeof socketApi.setPlaybackStateSnapshot === "function") {
+      socketApi.setPlaybackStateSnapshot(payload);
+    }
     io.emit("source_update", payload);
 
     res.json({ active: source });
