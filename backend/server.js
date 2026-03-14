@@ -128,9 +128,12 @@ async function bootstrap() {
   socketApi = setupSocket(io);
 
   const port = Number(process.env.PORT || 3000);
-  server.listen(port, () => {
+  const host = process.env.HOST || "0.0.0.0";
+
+  server.listen(port, host, () => {
+    const displayHost = host === "0.0.0.0" ? "localhost" : host;
     // eslint-disable-next-line no-console
-    console.log(`Hawkins Sync server listening on http://localhost:${port}`);
+    console.log(`Hawkins Sync server listening on http://${displayHost}:${port}`);
   });
 }
 
