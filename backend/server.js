@@ -21,6 +21,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+if (process.env.TRUST_PROXY === "1") {
+  app.set("trust proxy", 1);
+}
+
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "hawkins-dev-session-secret",
   resave: false,

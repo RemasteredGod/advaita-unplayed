@@ -1,12 +1,14 @@
 {
-  "name": "hawkins-sync",
+  "name": "advaita-unplayed",
   "version": "1.0.0",
-  "description": "Stranger Things themed synchronized broadcast system",
+  "description": "Open-source synchronized broadcast app with admin controls, chat, and media playback",
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node backend/server.js"
+    "dev": "node backend/server.js",
+    "setup:gcp": "bash scripts/bootstrap-gcp.sh"
   },
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "express": "^4.21.2",
